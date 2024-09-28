@@ -3,9 +3,4 @@
 # poetry run python -m slack_rag_bot.main
 # ngrok http http://localhost:3000
 
-git init
-git add .
-git commit -m "first commit"
-git branch -M main
-git remote add origin git@github.com:junwenyin/slack-genai-bot.git
-git push -u origin main
+docker run --name redis-server -d -p 6379:6379 redis

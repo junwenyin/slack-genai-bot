@@ -10,6 +10,7 @@ import uvicorn
 import os
 
 from slack_rag_bot.config import Config
+from slack_rag_bot.response_generator import ResponseGenerator
 
 # Load environment variables and configure logging
 logging.basicConfig(level=logging.DEBUG)
@@ -17,6 +18,7 @@ logging.basicConfig(level=logging.DEBUG)
 # Initialize Slack app and RQ (Redis Queue) setup
 app = AsyncApp()
 app_handler = AsyncSlackRequestHandler(app)
+response_generator = ResponseGenerator(app)
 
 redis_conn = Redis.from_url(Config.redis_url)  # Create Redis connection from URL
 queue = Queue(connection=redis_conn)
@@ -24,35 +26,8 @@ queue = Queue(connection=redis_conn)
 # FastAPI app
 api = FastAPI()
 
-# Background task: Generate response using ChatOpenAI and send message to Slack
 async def generate_response(body):
-    try:
-        logging.info(f"Received body: {body}")
-        
-        # Extract relevant data
-        channel_id = body["event"]["channel"]
-        thread_ts = body["event"]["event_ts"]
-        user_message = body["event"]["text"]
-
-        # Initialize OpenAI chat model
-        llm = ChatOpenAI(model="gpt-4o-mini")
-        messages = [
-            ("system", "You are a helpful assistant."),
-            ("human", user_message),
-        ]
-        
-        # Get AI-generated message
-        ai_response = llm.invoke(messages)
-
-        # Send AI-generated message back to Slack
-        await app.client.chat_postMessage(
-            channel=channel_id,
-            text=ai_response.content,
-            thread_ts=thread_ts
-        )
-        logging.info("Message successfully sent to Slack.")
-    except Exception as e:
-        logging.error(f"Error in generate_response: {e}")
+    await response_generator.generate_response(body)
 
 # Event handler for Slack app mentions
 @app.event("app_mention")
