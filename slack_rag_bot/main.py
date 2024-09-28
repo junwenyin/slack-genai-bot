@@ -9,16 +9,16 @@ from langchain_openai import ChatOpenAI
 import uvicorn
 import os
 
+from slack_rag_bot.config import Config
+
 # Load environment variables and configure logging
-load_dotenv()
 logging.basicConfig(level=logging.DEBUG)
 
 # Initialize Slack app and RQ (Redis Queue) setup
 app = AsyncApp()
 app_handler = AsyncSlackRequestHandler(app)
 
-redis_url = os.getenv("REDIS_URL", "redis://localhost:6379")
-redis_conn = Redis.from_url(redis_url)  # Create Redis connection from URL
+redis_conn = Redis.from_url(Config.redis_url)  # Create Redis connection from URL
 queue = Queue(connection=redis_conn)
 
 # FastAPI app

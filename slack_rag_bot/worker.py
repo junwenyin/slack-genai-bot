@@ -2,13 +2,10 @@
 import os
 import redis
 from rq import Worker, Queue, Connection
-from dotenv import load_dotenv
-load_dotenv()
-
+from slack_rag_bot.config import Config
 
 # Create Redis connection
-redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379')
-conn = redis.from_url(redis_url)
+conn = redis.from_url(Config.redis_url)
 
 # Set up a queue
 listen = ['default']
