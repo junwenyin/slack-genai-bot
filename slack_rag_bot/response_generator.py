@@ -1,26 +1,28 @@
 import logging
 from langchain_openai import ChatOpenAI
+from slack_sdk import WebClient
+from slack_rag_bot.config import Config
 
 class ResponseGenerator:
     """
     A class to handle response generation using ChatOpenAI and sending messages to Slack.
     """
 
-    def __init__(self, app):
-        self.app = app
+    def __init__(self):
+        self.slack_client = WebClient(Config.token)
         self.llm = ChatOpenAI(model="gpt-4o-mini")  # Initialize the OpenAI model
 
-    async def generate_response(self, body):
+    def generate_response(self, event):
         """
         Generate a response using OpenAI and send it to Slack.
         """
         try:
-            logging.info(f"Received body: {body}")
+            logging.info(f"Received event: {event}")
             
             # Extract relevant data
-            channel_id = body["event"]["channel"]
-            thread_ts = body["event"]["event_ts"]
-            user_message = body["event"]["text"]
+            channel_id = event["channel"]
+            thread_ts = event["ts"]
+            user_message = event["text"]
 
             # Prepare the message for the LLM
             messages = [
@@ -32,7 +34,7 @@ class ResponseGenerator:
             ai_response = self.llm.invoke(messages)
 
             # Send the generated message back to Slack
-            await self.app.client.chat_postMessage(
+            self.slack_client.chat_postMessage(
                 channel=channel_id,
                 text=ai_response.content,
                 thread_ts=thread_ts

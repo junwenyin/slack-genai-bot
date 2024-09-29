@@ -1,5 +1,10 @@
 # uvicorn slack_rag_bot.main:api --reload --port 3000 
 # poetry run python -m slack_rag_bot.worker
+
+# SOCKET MODE
+# poetry run python -m slack_rag_bot.socket
+
+# API MODE
 # poetry run python -m slack_rag_bot.main
 # ngrok http http://localhost:3000
 
